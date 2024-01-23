@@ -82,9 +82,22 @@ def request_leave():
         return redirect(url_for('index'))
 
     try:
-        leave_date = datetime.strptime(date_str, '%Y-%m-%d')
+        leave_date = datetime.strptime(date_str, '%Y-%m-%d').date()
     except ValueError:
         flash('Invalid date format. Please use YYYY-MM-DD format.')
+        return redirect(url_for('index'))
+    
+    if prove_leave_date(leave_date) == False: 
+        flash('You cannot request leave more than 2 months in advance.')
+        return redirect(url_for('index'))
+    
+    request_made = already_requested(current_user.username, leave_date)
+    if request_made:
+        flash(f'You have already submitted a leave request for this date. Existing request: {request_made}')
+        return redirect(url_for('index'))
+        
+    if leave_requests_count(current_user.username) >= 10:
+        flash('You have already submitted 10 leave requests. You cannot submit more.')
         return redirect(url_for('index'))
 
     new_leave_request = LeaveRequest(username=current_user.username, leave_date=leave_date, reason=reason)
@@ -92,6 +105,43 @@ def request_leave():
     db.session.commit()
 
     flash('Your leave request has been submitted.')
+    return redirect(url_for('index'))
+
+
+def already_requested(username, leave_date):
+    existing_leave_request = LeaveRequest.query.filter_by(username=username, leave_date=leave_date).first()
+
+    if existing_leave_request:
+        return existing_leave_request
+    
+def prove_leave_date(leave_date):
+    today = datetime.date(datetime.now())
+    difference = leave_date - today
+
+    if difference.days > 60:
+        return False 
+
+def leave_requests_count(username):
+    leave_requests_count = LeaveRequest.query.filter_by(username=username).count()
+    return leave_requests_count
+
+
+@app.route('/delete_leave_request/<int:id>', methods=['POST'])
+@login_required
+def delete_leave_request(id):
+    leave_request = LeaveRequest.query.get_or_404(id)
+
+    if leave_request.username != current_user.username:
+        flash('You are not authorized to delete this leave request.')
+        return redirect(url_for('index'))
+    
+    if leave_request.leave_date < datetime.date(datetime.now()):
+        flash('You cannot delete a leave request that is in the past.')
+        return redirect(url_for('index'))
+    
+    db.session.delete(leave_request)
+    db.session.commit()
+    flash('Your leave request has been deleted.')
     return redirect(url_for('index'))
 
 

@@ -25,7 +25,11 @@
     </form>
     <ul>
         {% for request in leave_requests %}
-        <li>{{ request.username }} - {{ request.leave_date }} - {{ request.reason }}</li>
+        <li>{{ request.username }} - {{ request.leave_date }} - {{ request.reason }}
+          <form action="{{ url_for('delete_leave_request', id=request.id) }}" method="post" style="display:inline;">
+            <input type="submit" value="Delete">
+          </form>
+        </li>
         {% endfor %}
     </ul>
 </body>
