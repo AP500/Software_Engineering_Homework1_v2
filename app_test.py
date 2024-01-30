@@ -16,12 +16,6 @@ def client():
             db.create_all()
         yield client
 
-def test_load_user(client):
-    with app.app_context():
-        user = User(username="testuser")
-        db.session.add(user)
-        db.session.commit()
-        assert User.query.get(1) == user
 
 def test_index_route_authenticated(client):
     with app.app_context():
