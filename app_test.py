@@ -247,7 +247,8 @@ def test_leave_requests_count_functionality(client, clean_database):
 
         assert leave_requests_count("testuser") == 2  
 
-def test_app_initialization(client):
+def test_main():
+    assert __name__ == "app_test"
     with app.app_context():
         db.create_all()
 
@@ -256,7 +257,4 @@ def test_app_initialization(client):
 
         assert 'user' in metadata.tables
         assert 'leave_request' in metadata.tables
-
-def test_main():
-    assert __name__ == "app_test"
 
