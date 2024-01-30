@@ -1,6 +1,7 @@
+from datetime import datetime, timedelta
 import pytest
 from flask import Flask, session
-from app import app, db, User, LeaveRequest
+from app import already_requested, app, db, User, LeaveRequest, leave_requests_count, prove_leave_date
 
 LOGIN_ROUTE = "/login"
 LEAVE_REQUESTS = "Leave Requests"
@@ -176,6 +177,51 @@ def test_delete_leave_request_functionality(client):
     )
     response = client.post("/delete_leave_request/1", follow_redirects=True)
     assert LEAVE_REQUESTS.encode() in response.data
+
+
+def test_already_requested_functionality(client):
+    with app.app_context():
+        user = User.query.filter_by(username="testuser").first()
+        if not user:
+            user = User(username="testuser")
+            user.set_password("testpassword")
+            db.session.add(user)
+            db.session.commit()
+
+        leave_request = LeaveRequest(username="testuser", leave_date=datetime.strptime("2020-01-01", "%Y-%m-%d").date(), reason="Vacation")
+        db.session.add(leave_request)
+        db.session.commit()
+
+        assert already_requested("testuser", "2020-01-01")  # This should return True
+
+def test_prove_leave_date_functionality(client):
+    with app.app_context():
+        user = User.query.filter_by(username="testuser").first()
+        if not user:
+            user = User(username="testuser")
+            user.set_password("testpassword")
+            db.session.add(user)
+            db.session.commit()
+
+        assert not prove_leave_date(datetime.date(datetime.now()) + timedelta(days=61))  # This should return False, because the date is more than 2 months in the future
+
+
+def test_leave_requests_count_functionality(client, clean_database):
+    with app.app_context():
+        user = User.query.filter_by(username="testuser").first()
+        if not user:
+            user = User(username="testuser")
+            user.set_password("testpassword")
+            db.session.add(user)
+            db.session.commit()
+
+        leave_request1 = LeaveRequest(username="testuser", leave_date=datetime.strptime("2020-01-01", "%Y-%m-%d").date(), reason="Vacation")
+        leave_request2 = LeaveRequest(username="testuser", leave_date=datetime.strptime("2020-02-01", "%Y-%m-%d").date(), reason="Vacation")
+        db.session.add(leave_request1)
+        db.session.add(leave_request2)
+        db.session.commit()
+
+        assert leave_requests_count("testuser") == 2  # The user has made two leave requests
 
 def test_main():
     assert __name__ == "app_test"
