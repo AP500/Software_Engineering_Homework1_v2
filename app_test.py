@@ -2,6 +2,7 @@ import pytest
 from flask import Flask, session
 from app import app, db, User, LeaveRequest
 
+LOGIN_ROUTE = "/login"
 
 @pytest.fixture
 def client():
@@ -25,7 +26,7 @@ def test_index_route_authenticated(client):
             db.session.commit()
 
     client.post(
-        "/login",
+        LOGIN_ROUTE,
         data=dict(username="testuser", password="testpassword"),
         follow_redirects=True,
     )
@@ -35,7 +36,7 @@ def test_index_route_authenticated(client):
 
 
 def test_login_route(client):
-    response = client.get("/login")
+    response = client.get(LOGIN_ROUTE)
     assert b"Login" in response.data
 
 
@@ -49,7 +50,7 @@ def test_login_functionality(client):
             db.session.commit()
 
     response = client.post(
-        "/login",
+        LOGIN_ROUTE,
         data=dict(username="testuser", password="testpassword"),
         follow_redirects=True,
     )
@@ -66,7 +67,7 @@ def test_logout_functionality(client):
             db.session.commit()
 
     client.post(
-        "/login",
+        LOGIN_ROUTE,
         data=dict(username="testuser", password="testpassword"),
         follow_redirects=True,
     )
@@ -109,7 +110,7 @@ def test_request_leave_functionality(client):
             db.session.commit()
 
     client.post(
-        "/login",
+        LOGIN_ROUTE,
         data=dict(username="testuser", password="testpassword"),
         follow_redirects=True,
     )
@@ -145,7 +146,7 @@ def test_delete_leave_request_functionality(client):
             db.session.commit()
 
     client.post(
-        "/login",
+        LOGIN_ROUTE,
         data=dict(username="testuser", password="testpassword"),
         follow_redirects=True,
     )
