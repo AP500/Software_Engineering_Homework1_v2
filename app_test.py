@@ -6,6 +6,21 @@ LOGIN_ROUTE = "/login"
 LEAVE_REQUESTS = "Leave Requests"
 
 @pytest.fixture
+def clean_database():
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+
+def test_load_user(client, clean_database):
+    with app.app_context():
+        user = User(username="testuser4")
+        db.session.add(user)
+        db.session.commit()
+
+        loaded_user = User.query.filter_by(username="testuser4").first()
+        assert user == loaded_user
+
+@pytest.fixture
 def client():
     app.config["TESTING"] = True
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
@@ -15,15 +30,6 @@ def client():
         with app.app_context():
             db.create_all()
         yield client
-
-def test_load_user(client):
-    with app.app_context():
-        user = User(username="testuser4")
-        db.session.add(user)
-        db.session.commit()
-
-        loaded_user = User.query.filter_by(username="testuser4").first()
-        assert user == loaded_user
 
 
 def test_index_route_authenticated(client):
