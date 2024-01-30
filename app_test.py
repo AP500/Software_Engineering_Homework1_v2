@@ -4,6 +4,7 @@ from app import app, db, User, LeaveRequest
 
 LOGIN_ROUTE = "/login"
 LEAVE_REQUESTS = "Leave Requests"
+REQUEST_LEAVE_ROUTE = "/request_leave"
 
 @pytest.fixture
 def clean_database():
@@ -119,7 +120,7 @@ def test_register_functionality(client):
 
 
 def test_request_leave_route(client):
-    response = client.get("/request_leave")
+    response = client.get(REQUEST_LEAVE_ROUTE)
     assert response.status_code == 405
 
 
@@ -138,7 +139,7 @@ def test_request_leave_functionality(client):
         follow_redirects=True,
     )
     response = client.post(
-        "/request_leave",
+        REQUEST_LEAVE_ROUTE,
         data=dict(username="testuser", leave_date="2020-01-01", reason="Vacation"),
         follow_redirects=True,
     )
@@ -199,7 +200,7 @@ def test_already_requested_functionality(client):
         follow_redirects=True,
     )
     response = client.post(
-    "/request_leave",
+    REQUEST_LEAVE_ROUTE,
     data=dict(leave_date="2022-12-31", reason="Vacation"),
     follow_redirects=True,
     )
@@ -228,7 +229,7 @@ def test_prove_leave_date_functionality(client):
         follow_redirects=True,
     )
     response = client.post(
-    "/request_leave",
+    REQUEST_LEAVE_ROUTE,
     data=dict(leave_date="2022-12-31", reason="Vacation"),
     follow_redirects=True,
     )
@@ -257,7 +258,7 @@ def test_leave_requests_count_functionality(client):
         follow_redirects=True,
     )
     response = client.post(
-    "/request_leave",
+    REQUEST_LEAVE_ROUTE,
     data=dict(leave_date="2022-12-31", reason="Vacation"),
     follow_redirects=True,
     )
