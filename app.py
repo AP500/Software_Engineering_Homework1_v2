@@ -10,10 +10,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from database import db
 from models import LeaveRequest, User
-import os
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
+app.config["SECRET_KEY"] = "your-secret-key"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///leave_requests.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
