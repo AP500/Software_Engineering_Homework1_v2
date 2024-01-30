@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 import pytest
 from flask import Flask, session
 from app import already_requested, app, db, User, LeaveRequest, leave_requests_count, prove_leave_date
+from sqlalchemy import MetaData
 
 LOGIN_ROUTE = "/login"
 LEAVE_REQUESTS = "Leave Requests"
@@ -77,6 +78,16 @@ def test_login_functionality(client):
     )
     assert b"You were successfully logged in!" in response.data
 
+    client.get("/logout", follow_redirects=True)
+
+    response = client.post(
+        LOGIN_ROUTE,
+        data=dict(username="testuser", password="wrongpassword"),
+        follow_redirects=True,
+    )
+
+    assert b"Invalid username or password" in response.data
+
 def test_logout_route(client):
     response = client.get("/logout")
     assert response.status_code == 302
@@ -121,6 +132,16 @@ def test_register_functionality(client):
 
     user = User.query.filter_by(username="testuser").first()
     assert user is not None
+
+        # Try to register with the same username
+    response = client.post(
+        "/register",
+        data=dict(username="testuser", password="testpassword"),
+        follow_redirects=True,
+    )
+
+    # Check that the correct error message is displayed
+    assert b"Username already exists. Choose a different one." in response.data
 
 
 def test_request_leave_route(client):
@@ -226,5 +247,19 @@ def test_leave_requests_count_functionality(client, clean_database):
 
         assert leave_requests_count("testuser") == 2  # The user has made two leave requests
 
+def test_app_initialization(client):
+    with app.app_context():
+        db.create_all()
+
+        metadata = MetaData()
+
+        # Reflect the tables
+        metadata.reflect(bind=db.engine)
+
+        # Check that the tables have been created
+        assert 'user' in metadata.tables
+        assert 'leave_request' in metadata.tables
+
 def test_main():
     assert __name__ == "app_test"
+
