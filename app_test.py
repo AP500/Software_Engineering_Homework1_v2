@@ -119,6 +119,9 @@ def test_register_functionality(client):
     )
     assert b"Successfully registered! You can now login." in response.data
 
+    user = User.query.filter_by(username="testuser").first()
+    assert user is not None
+
 
 def test_request_leave_route(client):
     response = client.get(REQUEST_LEAVE_ROUTE)
