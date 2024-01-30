@@ -3,6 +3,7 @@ from flask import Flask, session
 from app import app, db, User, LeaveRequest
 
 LOGIN_ROUTE = "/login"
+LEAVE_REQUESTS = "Leave Requests"
 
 @pytest.fixture
 def client():
@@ -32,7 +33,7 @@ def test_index_route_authenticated(client):
     )
 
     response = client.get("/")
-    assert b"Leave Requests" in response.data
+    assert LEAVE_REQUESTS.encode() in response.data
 
 
 def test_login_route(client):
@@ -119,7 +120,7 @@ def test_request_leave_functionality(client):
         data=dict(username="testuser", leave_date="2020-01-01", reason="Vacation"),
         follow_redirects=True,
     )
-    assert b"Leave Requests" in response.data
+    assert LEAVE_REQUESTS.encode() in response.data
     assert b"Vacation" in response.data
 
 
@@ -151,4 +152,4 @@ def test_delete_leave_request_functionality(client):
         follow_redirects=True,
     )
     response = client.post("/delete_leave_request/1", follow_redirects=True)
-    assert b"Leave Requests" in response.data
+    assert LEAVE_REQUESTS.encode() in response.data
