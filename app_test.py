@@ -7,6 +7,8 @@ from sqlalchemy import MetaData
 LOGIN_ROUTE = "/login"
 LEAVE_REQUESTS = "Leave Requests"
 REQUEST_LEAVE_ROUTE = "/request_leave"
+REGISTER_ROUTE = "/register"
+LOGOUT_ROUTE = "/logout"
 
 @pytest.fixture
 def clean_database():
@@ -78,7 +80,7 @@ def test_login_functionality(client):
     )
     assert b"You were successfully logged in!" in response.data
 
-    client.get("/logout", follow_redirects=True)
+    client.get(LOGOUT_ROUTE, follow_redirects=True)
 
     response = client.post(
         LOGIN_ROUTE,
@@ -89,7 +91,7 @@ def test_login_functionality(client):
     assert b"Invalid username or password" in response.data
 
 def test_logout_route(client):
-    response = client.get("/logout")
+    response = client.get(LOGOUT_ROUTE)
     assert response.status_code == 302
 
 
@@ -107,12 +109,12 @@ def test_logout_functionality(client):
         data=dict(username="testuser", password="testpassword"),
         follow_redirects=True,
     )
-    response = client.get("/logout", follow_redirects=True)
+    response = client.get(LOGOUT_ROUTE, follow_redirects=True)
     assert b"Login" in response.data
 
 
 def test_register_route(client):
-    response = client.get("/register")
+    response = client.get(REGISTER_ROUTE)
     assert b"Register" in response.data
 
 
@@ -124,7 +126,7 @@ def test_register_functionality(client):
             db.session.commit()
 
     response = client.post(
-        "/register",
+        REGISTER_ROUTE,
         data=dict(username="testuser", password="testpassword"),
         follow_redirects=True,
     )
@@ -133,14 +135,12 @@ def test_register_functionality(client):
     user = User.query.filter_by(username="testuser").first()
     assert user is not None
 
-        # Try to register with the same username
     response = client.post(
-        "/register",
+        REGISTER_ROUTE,
         data=dict(username="testuser", password="testpassword"),
         follow_redirects=True,
     )
 
-    # Check that the correct error message is displayed
     assert b"Username already exists. Choose a different one." in response.data
 
 
@@ -216,7 +216,7 @@ def test_already_requested_functionality(client):
         db.session.add(leave_request)
         db.session.commit()
 
-        assert already_requested("testuser", "2020-01-01")  # This should return True
+        assert already_requested("testuser", "2020-01-01") 
 
 def test_prove_leave_date_functionality(client):
     with app.app_context():
@@ -227,7 +227,7 @@ def test_prove_leave_date_functionality(client):
             db.session.add(user)
             db.session.commit()
 
-        assert not prove_leave_date(datetime.date(datetime.now()) + timedelta(days=61))  # This should return False, because the date is more than 2 months in the future
+        assert not prove_leave_date(datetime.date(datetime.now()) + timedelta(days=61))  
 
 
 def test_leave_requests_count_functionality(client, clean_database):
@@ -245,18 +245,15 @@ def test_leave_requests_count_functionality(client, clean_database):
         db.session.add(leave_request2)
         db.session.commit()
 
-        assert leave_requests_count("testuser") == 2  # The user has made two leave requests
+        assert leave_requests_count("testuser") == 2  
 
 def test_app_initialization(client):
     with app.app_context():
         db.create_all()
 
         metadata = MetaData()
-
-        # Reflect the tables
         metadata.reflect(bind=db.engine)
 
-        # Check that the tables have been created
         assert 'user' in metadata.tables
         assert 'leave_request' in metadata.tables
 
