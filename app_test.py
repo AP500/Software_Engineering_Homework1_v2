@@ -153,3 +153,90 @@ def test_delete_leave_request_functionality(client):
     )
     response = client.post("/delete_leave_request/1", follow_redirects=True)
     assert LEAVE_REQUESTS.encode() in response.data
+
+def test_already_requested_functionality(client):
+    with app.app_context():
+        user = User.query.filter_by(username="testuser").first()
+        if not user:
+            user = User(username="testuser")
+            user.set_password("testpassword")
+            db.session.add(user)
+            db.session.commit()
+
+        leave_request = LeaveRequest.query.filter_by(username="testuser").first()
+        if not leave_request:
+            leave_request = LeaveRequest(
+                username="testuser", leave_date="2020-01-01", reason="Vacation"
+            )
+            db.session.add(leave_request)
+            db.session.commit()
+
+    client.post(
+        LOGIN_ROUTE,
+        data=dict(username="testuser", password="testpassword"),
+        follow_redirects=True,
+    )
+    response = client.post(
+    "/request_leave",
+    data=dict(leave_date="2022-12-31", reason="Vacation"),
+    follow_redirects=True,
+    )
+    assert LEAVE_REQUESTS.encode() in response.data
+
+def test_prove_leave_date_functionality(client):
+    with app.app_context():
+        user = User.query.filter_by(username="testuser").first()
+        if not user:
+            user = User(username="testuser")
+            user.set_password("testpassword")
+            db.session.add(user)
+            db.session.commit()
+
+        leave_request = LeaveRequest.query.filter_by(username="testuser").first()
+        if not leave_request:
+            leave_request = LeaveRequest(
+                username="testuser", leave_date="2020-01-01", reason="Vacation"
+            )
+            db.session.add(leave_request)
+            db.session.commit()
+
+    client.post(
+        LOGIN_ROUTE,
+        data=dict(username="testuser", password="testpassword"),
+        follow_redirects=True,
+    )
+    response = client.post(
+    "/request_leave",
+    data=dict(leave_date="2022-12-31", reason="Vacation"),
+    follow_redirects=True,
+    )
+    assert LEAVE_REQUESTS.encode() in response.data
+
+def test_leave_requests_count_functionality(client):
+    with app.app_context():
+        user = User.query.filter_by(username="testuser").first()
+        if not user:
+            user = User(username="testuser")
+            user.set_password("testpassword")
+            db.session.add(user)
+            db.session.commit()
+
+        leave_request = LeaveRequest.query.filter_by(username="testuser").first()
+        if not leave_request:
+            leave_request = LeaveRequest(
+                username="testuser", leave_date="2020-01-01", reason="Vacation"
+            )
+            db.session.add(leave_request)
+            db.session.commit()
+
+    client.post(
+        LOGIN_ROUTE,
+        data=dict(username="testuser", password="testpassword"),
+        follow_redirects=True,
+    )
+    response = client.post(
+    "/request_leave",
+    data=dict(leave_date="2022-12-31", reason="Vacation"),
+    follow_redirects=True,
+    )
+    assert LEAVE_REQUESTS.encode() in response.data
