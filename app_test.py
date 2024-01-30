@@ -16,6 +16,15 @@ def client():
             db.create_all()
         yield client
 
+def test_load_user(client):
+    with app.app_context():
+        user = User(username="testuser4")
+        db.session.add(user)
+        db.session.commit()
+
+        loaded_user = User.query.filter_by(username="testuser4").first()
+        assert user == loaded_user
+
 
 def test_index_route_authenticated(client):
     with app.app_context():
@@ -35,6 +44,9 @@ def test_index_route_authenticated(client):
     response = client.get("/")
     assert LEAVE_REQUESTS.encode() in response.data
 
+def test_index_route_unauthenticated(client):
+    response = client.get("/")
+    assert response.status_code == 302
 
 def test_login_route(client):
     response = client.get(LOGIN_ROUTE)
@@ -244,3 +256,6 @@ def test_leave_requests_count_functionality(client):
     follow_redirects=True,
     )
     assert LEAVE_REQUESTS.encode() in response.data
+
+def test_main():
+    assert __name__ == "app_test"
