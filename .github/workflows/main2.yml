@@ -28,6 +28,7 @@ jobs:
       - name: Run tests with coverage
         run: |
           pytest --cov=app
+          pytest --cov=models
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
