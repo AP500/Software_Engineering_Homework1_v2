@@ -29,6 +29,7 @@ jobs:
         run: |
           pytest --cov=app
           pytest --cov=models
+          pytest --cov=templates  
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
